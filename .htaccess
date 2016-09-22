@@ -1,0 +1,12 @@
+AddDefaultCharset UTF-8
+IndexIgnore *.gif *.jpg *.pdf *.swf *.zip *.doc *.mov *.png *.ppt *.rar *.woff
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+	Options -MultiViews -Indexes
+
+    # Handle Front Controller...
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteRule ^ index.php [L]
+</IfModule>

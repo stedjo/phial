@@ -1,0 +1,31 @@
+/*! phial.css | MIT License | git.io/phial */
+
+* {
+	font-family: 'Source Sans Pro', sans-serif;
+}
+
+h1 {
+	font-size: 72px;
+	line-height: 1px;
+	margin-left: -5px;
+}
+
+p {
+	line-height: 22px;
+	font-size: 20px;
+}
+
+.container {
+	overflow: hidden;
+	margin-top: 15%;
+}
+
+.container div:first-child {
+	width: 150px;
+	float: left;
+}
+
+.container div:last-child {
+	float: left;
+	padding-top: 50px;
+}
