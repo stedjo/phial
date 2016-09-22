@@ -1,5 +1,6 @@
-/_logs/*
+/_logs/*.txt
 /vendor
+/docs
 composer.phar
 composer.lock
 .php_cs.cache
