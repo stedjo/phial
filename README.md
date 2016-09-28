@@ -98,8 +98,98 @@ passed to the first argument of the clousre function. You can name it as you pre
 
 
 ## Templating
+The template engine Phial uses is called PHP Plates. [Full documentation](http://platesphp.com/)
+
+This help will cover the basics of templating.
+
+The first thing you need to do is to place a **.phtml** file into the **templates/** folder.
+Inside this template file you can write both html and php code.
+If you want to pass some data to the template you need to specify it using the bind() function in your app.
+
+```php
+		
+	$app->bind('fullname', $var);
+	
+```
+
+In this case you are passing a $fullname variable to the template and it's content is $var;
+Now you will be able to print the variable in your template like this:
+
+```html
+
+	<h1>Here is the variable contents</h1>
+	<p>
+		Hello <?=$fullname?>!
+	</p>
+
+```
+
+
+Phial + Plates lets you use templates inheritance, so to say, you can use the layouts.
+Define a layout file putting the section('content') somewhere in a template:
+
+```php
+	<!DOCTYPE html>
+	<html lang="en">
+	<head>
+		<title>Phial :)</title>
+	</head>
+	<body>
+
+		<?=$this->section('content')?>
+	
+	</body>
+	</html>
+	
+
+```
+
+At this point this template file can be used as a layout. To do so, just call it from the partial template file like this:
+
+```php
+
+	<? $this->layout('base') ?>
+	
+	<h2>This is a partial template injected into base.phtml layout</h2>
+
+```
+
+
+
+
+
 
 ## Database
+Phial uses the mighty phpactiverecord library as default ORM layer.
+
+### Connecting
+To configure the connection you just need to uncomment the database section in **config/default.php** file and change the parameters accordingly to your mysql config.
+
+Phial will automatically connect your app to the socket and expose all the functions of phpactiverecord to you.
+
+### Models
+The first thing you need to do is to create a model file in the **models/** directory.
+The table on the database should have a plural form name (categories)
+while the model file should have a singular form name (category.php).
+
+Follow the instruction on phpactiverecord website on how to write these models
+and how to bind relationships between them.
+
+### Query
+
+Now that models are all in place let's see how a query works:
+
+```php
+
+	// finds an author with id = $author_id
+	$author = Author::find($author_id);
+	
+	// fetches all the books related to that author
+	$books = $author->books;
+	
+```
+
+
 
 ## Scaling to large
 
