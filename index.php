@@ -14,5 +14,14 @@ $app->route('/', function() use($app) {
 
 });
 
+$app->route('/hello/(.*)', function($name) use($app) {
+
+    // render a template with data
+    return $app->response("Hello {$name}", 200);
+
+});
+
+
+
 // and done
 $app->run();

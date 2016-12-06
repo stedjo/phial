@@ -23,6 +23,8 @@ class Phial {
 
     public $is_cli;
 
+    public $http_method;
+
 
     function __construct($basedir=null)
     {
@@ -170,15 +172,28 @@ class Phial {
         return true;
     }
 
+    function get_method()
+    {
+        return $this->http_method;
+    }
+
+    function set_method($method)
+    {
+        $this->http_method = $method;
+    }
 
 
+    function get_uri()
+    {
+        $request_uri = substr($_SERVER['REQUEST_URI'], strlen(substr($_SERVER['SCRIPT_NAME'], 0, -9)));
+        return '/'.rtrim($request_uri, '/');
+    }
 
     function run()
     {
 
         // this removes the index.php and base folder from request url
-        $request_uri = substr($_SERVER['REQUEST_URI'], strlen(substr($_SERVER['SCRIPT_NAME'], 0, -9)));
-        $this->request_uri = '/'.rtrim($request_uri, '/');
+        $this->request_uri = $this->get_uri();
 
         /*
          *  Checking custom rules first
@@ -211,8 +226,11 @@ class Phial {
             if($app && $controller && $action)
             {
                 $this->execute_app_action($app, $controller, $action, $request);
+
             } else {
+
                 $this->errors[] = "Missing parameters. Automagic routing needs 3 parameters.";
+
             }
 
         }
