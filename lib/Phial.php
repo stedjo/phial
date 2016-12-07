@@ -24,6 +24,7 @@ class Phial {
     public $is_cli;
 
     public $http_method;
+    public $route_methods = array();
 
 
     function __construct($basedir=null)
@@ -66,6 +67,8 @@ class Phial {
         $this->logger = new Logger($this->get_config('log_path'));
         $this->registry = new Registry();
 
+        $this->set_method(strtolower($_SERVER['REQUEST_METHOD']));
+
     }
 
 
@@ -87,7 +90,16 @@ class Phial {
             $obj->controller = $controller;
             $obj->action = $action;
             $obj->params = $params;
-            $obj->template->addFolder($controller, phial_path.'apps/'.$app.'/templates/'.$controller);
+
+            $tmp_folder = phial_path.'apps/'.$app.'/templates/'.$controller;
+
+            if(is_readable($tmp_folder))
+            {
+                $obj->template->addFolder($controller, $tmp_folder);
+            } else {
+                $this->errors[] = "Template folder missing <b>{$tmp_folder}</b>";
+            }
+
 
             if(method_exists($obj, $action))
             {
@@ -119,12 +131,24 @@ class Phial {
     }
 
 
+    /**
+     * Binds a variable to the template
+     * @param string $var_name the variable name
+     * @param string $var_value the variable value
+     */
     function bind($var_name, $var_value)
     {
         $this->template->addData([$var_name => $var_value]);
     }
 
 
+    /**
+     * Sets the response
+     * @param string $body the body of the response
+     * @param int $code http code response
+     * @param array $headers a list of all headers you want
+     * @return string the body of the response
+     */
     function response($body, $code = 200, $headers = [])
     {
         http_response_code($code);
@@ -147,50 +171,136 @@ class Phial {
 
         });
 
-        echo $body;
+        return $body;
     }
 
 
+    /**
+     * Loads the config file passed by param
+     * @param string $cfg_file path to the config file
+     * @return bool true if config file is found
+     */
     function load_config($cfg_file = "default.php")
     {
         $this->config = require_once phial_path.'config/'.$cfg_file;
         return true;
     }
 
+    /**
+     * Returns the config option based on the key passed
+     * @param string $key config key
+     * @return mixed a single config option
+     */
     function get_config($key)
     {
         return (isset($this->config[$key])) ? $this->config[$key] : null;
     }
 
 
-    /*
+    /**
      * Adding a route
      */
     function route($path, $closure = null)
     {
-        $this->routes[$path] = $closure;
+        $this->routes['get'][$path] = $closure;
         return true;
     }
 
+    /**
+     * Adding a GET verb
+     */
+    function get($path, $closure = null)
+    {
+        $this->routes['get'][$path] = $closure;
+        return true;
+    }
+
+    /**
+     * Adding a PUT verb
+     */
+    function put($path, $closure = null)
+    {
+        $this->routes['put'][$path] = $closure;
+        return true;
+    }
+
+    /**
+     * Adding a POST verb
+     */
+    function post($path, $closure = null)
+    {
+        $this->routes['post'][$path] = $closure;
+        return true;
+    }
+
+    /**
+     * Adding a DELETE verb
+     */
+    function delete($path, $closure = null)
+    {
+        $this->routes['delete'][$path] = $closure;
+        return true;
+    }
+
+    /**
+     * @return string returns the request's http method
+     */
     function get_method()
     {
         return $this->http_method;
     }
 
+    /**
+     * @param string $method sets the request's http method
+     */
     function set_method($method)
     {
         $this->http_method = $method;
     }
 
+    /**
+     * returns all the routing
+     */
+    function get_routes()
+    {
+        return $this->routes;
+    }
 
+    /**
+     * @return string parses and returns the uri
+     */
     function get_uri()
     {
         $request_uri = substr($_SERVER['REQUEST_URI'], strlen(substr($_SERVER['SCRIPT_NAME'], 0, -9)));
         return '/'.rtrim($request_uri, '/');
     }
 
+    /**
+     * Prints out a list of errors
+     */
+    function render_errors()
+    {
+        echo "<hr noshade size='1' color='silver'><pre><h4>Phial Errors</h4><ul>";
+        foreach($this->errors as $e) {
+            echo "<li>{$e}</li>";
+        }
+        echo "</ul></pre>";
+    }
+
+
+
+    /**
+     * Actually runs the Phial application
+     */
     function run()
     {
+
+        // defaulting the path
+        $path = null;
+        // default for custom routing
+        $custom_rule_found = false;
+        // defaulting wrong method
+        $wrong_method = false;
 
         // this removes the index.php and base folder from request url
         $this->request_uri = $this->get_uri();
@@ -198,38 +308,59 @@ class Phial {
         /*
          *  Checking custom rules first
          */
-        $custom_rule_found = false;
-        foreach($this->routes as $path => $closure)
+        foreach($this->get_routes() as $method => $routes)
         {
 
-            if(preg_match("~^{$path}$~", $this->request_uri, $match))
+            foreach($routes as $path => $closure)
             {
-                $custom_rule_found = true;
-                unset($match[0]);
-                $this->response = call_user_func_array($closure, $match);
+
+                if(preg_match("~^{$path}$~", $this->request_uri, $match))
+                {
+
+                    if($method == $this->get_method())
+                    {
+                        $wrong_method = false;
+                        unset($match[0]);
+                        $this->response = call_user_func_array($closure, $match);
+                        $custom_rule_found = true;
+
+                    }
+
+                }
+
             }
+
         }
 
-
         /*
-         *  Automagic rules
+         *  Automagic routing rules
          */
-        if($custom_rule_found == false)
+        if($wrong_method == true)
         {
 
-            // split parameters
-            $request = explode('/', ltrim($this->request_uri, '/'));
-            $app = array_shift($request);
-            $controller = array_shift($request);
-            $action = array_shift($request);
+            unset($this->response);
+            $this->response(null, 405, null);
 
-            if($app && $controller && $action)
+        } else {
+
+            if($custom_rule_found == false)
             {
-                $this->execute_app_action($app, $controller, $action, $request);
 
-            } else {
+                // split parameters
+                $request = explode('/', ltrim($this->request_uri, '/'));
+                $app = array_shift($request);
+                $controller = array_shift($request);
+                $action = array_shift($request);
 
-                $this->errors[] = "Missing parameters. Automagic routing needs 3 parameters.";
+                if($app && $controller && $action)
+                {
+                    $this->execute_app_action($app, $controller, $action, $request);
+
+                } else {
+
+                    $this->errors[] = "Missing parameters. Automagic routing needs 3 parameters.";
+
+                }
 
             }
 
@@ -239,11 +370,11 @@ class Phial {
         // shows errors if any
         if(count($this->errors))
         {
-            var_dump($this->errors);
+            $this->render_errors();
         }
 
         echo $this->response;
-
+        exit;
     }
 
 }

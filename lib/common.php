@@ -22,7 +22,7 @@ function redirect($path)
 
 function dd($v, $die=false)
 {
-    echo "<pre>";
+    echo "<pre class='xdebug-var-dump'>";
     print_r($v);
     echo "</pre>";
     if($die) die();
