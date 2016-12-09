@@ -22,7 +22,7 @@ Replace it's contents with this code:
 
 ```php
   // hello world example
-  $app->route('/hello/(.*)', function($name) use($app) {
+  $app->route('/hello/:name', function($name) use($app) {
 
         return "Hello {$name}!";
 
@@ -86,7 +86,7 @@ You can also pass parameters to your routes like this:
 
 ```php
   // define a route
-  $app->route('/hello/(.*)', function($name) use($app) {
+  $app->route('/hello/:name', function($name) use($app) {
 
         // do cool stuff
         return "Hello {$name}!";
