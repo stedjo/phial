@@ -271,8 +271,8 @@ class Phial {
      */
     function get_uri()
     {
-        $request_uri = substr($_SERVER['REQUEST_URI'], strlen(substr($_SERVER['SCRIPT_NAME'], 0, -9)));
-        return '/'.rtrim($request_uri, '/');
+        $request_uri = '/'.substr($_SERVER['REQUEST_URI'], strlen(substr($_SERVER['SCRIPT_NAME'], 0, -9)));
+        return rtrim($request_uri, '/');
     }
 
     /**
@@ -314,13 +314,16 @@ class Phial {
             foreach($routes as $path => $closure)
             {
 
-                if(preg_match("~^{$path}$~", $this->request_uri, $match))
+                $pattern = "@^" . preg_replace('/\\\:[a-zA-Z0-9\_\-]+/', '([a-zA-Z0-9\-\_]+)', preg_quote($path)) . "$@D";
+
+                if(preg_match($pattern, $this->request_uri, $match))
                 {
+
+                    unset($match[0]); // first one must be removed
 
                     if($method == $this->get_method())
                     {
                         $wrong_method = false;
-                        unset($match[0]);
                         $this->response = call_user_func_array($closure, $match);
                         $custom_rule_found = true;
 
