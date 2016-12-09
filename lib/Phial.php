@@ -272,7 +272,7 @@ class Phial {
     function get_uri()
     {
         $request_uri = '/'.substr($_SERVER['REQUEST_URI'], strlen(substr($_SERVER['SCRIPT_NAME'], 0, -9)));
-        return rtrim($request_uri, '/');
+        return $request_uri;
     }
 
     /**
