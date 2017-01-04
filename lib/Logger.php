@@ -22,13 +22,13 @@ class Logger {
     /*
      *  Sends a new line into the log file
      */
-    function write($line) {
+    function write($verb, $line) {
 
         /* open log file */
         $fp = fopen($this->logfile, $this->fileaccess);
 
         /* merge infos in one line */
-        $line = "[".date("Y-m-d H:i:s")."][".$_SERVER['REMOTE_ADDR']."] ".trim($line)."\n";
+        $line = "[".date("Y-m-d H:i:s")."][{$_SERVER['REMOTE_ADDR']}][{$verb}] ".trim($line)."\n";
 
         /* dump the new line in the log file */
         $done = fwrite($fp, $line);
@@ -41,6 +41,7 @@ class Logger {
             return true;
         else
             return false;
+
     }
 
 

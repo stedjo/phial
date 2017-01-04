@@ -175,6 +175,8 @@ while the model file should have a singular form name (category.php).
 Follow the instruction on phpactiverecord website on how to write these models
 and how to bind relationships between them.
 
+
+
 ### Query
 
 Now that models are all in place let's see how a query works:
@@ -188,6 +190,41 @@ Now that models are all in place let's see how a query works:
 	$books = $author->books;
 	
 ```
+
+
+
+
+
+## REST APIs
+
+So, you want to take a REST ? Here you go:
+
+Right now Phial supports the 3 main REST verbs:
+
+```php
+
+// this will be interpreted as a GET request
+$app->get("/service/:service_id", function($service_id) use($app){
+	$app->response('returning the service', 200);
+});
+
+// this will be interpreted as a POST request
+$app->post("/service/:service_id", function($service_id) use($app){
+	$app->response('service saved in db', 200);
+});
+
+// this will be interpreted as a PUT request
+$app->put("/service/:service_id", function($service_id) use($app){
+	$app->response('service updated', 200);
+});
+
+// this will be interpreted as a DELETE request
+$app->delete("/service/:service_id", function($service_id) use($app){
+	$app->response('that service no longer exists', 200);
+});
+```
+
+In this example we are defining the same routing path but with 4 different verbs. Phial will handle it according to the request you are going to send.
 
 
 
