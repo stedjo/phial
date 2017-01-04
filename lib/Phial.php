@@ -151,7 +151,6 @@ class Phial {
      */
     function response($body, $code = 200, $headers = [])
     {
-        http_response_code($code);
 
         array_walk($headers, function ($value, $key)
         {
@@ -171,6 +170,7 @@ class Phial {
 
         });
 
+        http_response_code($code);
         return $body;
     }
 
