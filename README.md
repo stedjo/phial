@@ -199,7 +199,7 @@ Now that models are all in place let's see how a query works:
 
 So, you want to take a REST ? Here you go:
 
-Right now Phial supports the 3 main REST verbs:
+Right now Phial supports the 4 main REST verbs:
 
 ```php
 
